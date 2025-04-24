@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intent Based Search</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gray-900 text-gray-200 min-h-screen p-6" x-data="productSearch()">
+  <div class="max-w-5xl mx-auto">
+    <header class="mb-8 text-center">
+      <h1 class="text-4xl font-bold text-blue-400 tracking-wide">AI Product Search</h1>
+    </header>
+
+    <input
+      type="text"
+      class="w-full p-4 rounded-xl text-lg bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-6"
+      placeholder="Search for products..."
+      x-model="query"
+      @input="searchProducts"
+    >
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <template x-for="product in paginatedProducts" :key="product.id">
+        <div class="bg-gray-800 p-5 rounded-2xl shadow-lg hover:shadow-xl transition">
+          <h2 class="text-xl font-semibold text-blue-400" x-text="product.title"></h2>
+          <p class="text-sm text-gray-300 mt-2" x-text="product.description"></p>
+          <ul class="text-sm mt-4 space-y-1">
+            <li><span class="text-gray-400">Category:</span> <span x-text="product.category"></span></li>
+            <li><span class="text-gray-400">Color:</span> <span x-text="product.color"></span></li>
+            <li><span class="text-gray-400">Size:</span> <span x-text="product.size_available"></span></li>
+            <li><span class="text-gray-400">Price:</span> <span class="text-green-400" x-text="product.price + ' ' + product.currency"></span></li>
+            <li><span class="text-gray-400">Discount:</span> <span class="text-red-400" x-text="product.discount_percent + '%' "></span></li>
+            <li><span class="text-gray-400">Added:</span> <span class="text-gray-400" x-text="product.created_at"></span></li>
+          </ul>
+        </div>
+      </template>
+    </div>
+
+    <div class="flex justify-center mt-10 space-x-2">
+      <button
+        class="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
+        :disabled="currentPage === 1"
+        @click="prevPage"
+      >Previous</button>
+
+      <template x-for="page in totalPages">
+        <button
+          class="px-3 py-2 rounded border border-gray-700"
+          :class="page === currentPage ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
+          @click="gotoPage(page)"
+          x-text="page"
+        ></button>
+      </template>
+
+      <button
+        class="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
+        :disabled="currentPage === totalPages"
+        @click="nextPage"
+      >Next</button>
+    </div>
+  </div>
+
+  <script>
+    function productSearch() {
+      return {
+        query: '',
+        products: Array.from({ length: 22 }, (_, i) => ({
+          id: i + 1,
+          title: `Product ${i + 1}`,
+          description: `This is the description for product ${i + 1}.`,
+          category: ['Electronics', 'Books', 'Clothing'][i % 3],
+          color: ['Red', 'Blue', 'Green'][i % 3],
+          price: (10 + i * 3).toFixed(2),
+          currency: 'USD',
+          discount_percent: (i % 5) * 5,
+          created_at: new Date(Date.now() - i * 86400000).toISOString().split('T')[0],
+          size_available: ['S', 'M', 'L', 'XL'][i % 4]
+        })),
+        currentPage: 1,
+        perPage: 20,
+
+        get totalPages() {
+          return Math.ceil(this.filteredProducts.length / this.perPage);
+        },
+
+        get filteredProducts() {
+          if (!this.query.trim()) return this.products;
+          const q = this.query.toLowerCase();
+          return this.products.filter(p =>
+            p.title.toLowerCase().includes(q) ||
+            p.description.toLowerCase().includes(q) ||
+            p.category.toLowerCase().includes(q)
+          );
+        },
+
+        get paginatedProducts() {
+          const start = (this.currentPage - 1) * this.perPage;
+          return this.filteredProducts.slice(start, start + this.perPage);
+        },
+
+        searchProducts() {
+          this.currentPage = 1;
+        },
+
+        prevPage() {
+          if (this.currentPage > 1) this.currentPage--;
+        },
+
+        nextPage() {
+          if (this.currentPage < this.totalPages) this.currentPage++;
+        },
+
+        gotoPage(page) {
+          this.currentPage = page;
+        }
+      }
+    }
+  </script>
+</body>
+</html>
+
