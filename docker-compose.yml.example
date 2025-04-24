@@ -1,0 +1,20 @@
+services:
+  embedding-service:
+    build:
+      context: .
+      dockerfile: .docker/python/Dockerfile
+    expose:
+      - "8000"  # Expose port to other containers, not externally
+    volumes:
+      - .cache:/root/.cache  # persist HuggingFace model cache
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf  # Mount custom nginx.conf
+    ports:
+      - "85:80" # Host:Container (Host port 85 → Nginx inside port 80)
+    depends_on:
+      - embedding-service  # Ensure embedding-service starts first
+    restart: unless-stopped
