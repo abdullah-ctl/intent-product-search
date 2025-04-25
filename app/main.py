@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request
 from sentence_transformers import SentenceTransformer
 
 app = FastAPI()
-model = SentenceTransformer("all-MiniLM-L6-v2")
+model = SentenceTransformer("/models/fine-tuned")
 
 @app.post("/embed")
 async def embed_text(req: Request):
@@ -11,3 +11,8 @@ async def embed_text(req: Request):
     text = data.get("text", "")
     embedding = model.encode(text).tolist()
     return {"embedding": embedding}
+
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to the Inter Based Product Search API!"}
