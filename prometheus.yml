@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 15s  # Scrape every 15 seconds
+
+scrape_configs:
+  - job_name: 'nginx'
+    metrics_path: '/metrics'  # NGINX metrics endpoint (adjust if needed)
+    static_configs:
+      - targets: ['nginx:80']  # Scrape from the nginx service on port 80
+
+  - job_name: 'embedding-service'
+    metrics_path: '/metrics'  # Ensure this path is exposed by your embedding service
+    static_configs:
+      - targets: ['embedding-service:8000']  # Scrape from the embedding service on port 8000
